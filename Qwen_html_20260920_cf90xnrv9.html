@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WYRM.studios | Delivery Review</title>
+    <style>
+        :root {
+            --bg-primary: #1c1917;
+            --bg-secondary: #292524;
+            --bg-controls: rgba(28, 25, 23, 0.95);
+            --text-primary: #f5f5f4;
+            --text-secondary: #a8a29e;
+            --accent: #d6d3d1;
+            --border: #44403c;
+            --play-btn-size: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .delivery-room {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            font-size: 12px;
+            padding: 6px 12px;
+            background-color: rgba(214, 211, 209, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            background-color: #000;
+        }
+
+        .video-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 60px);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Thumbnail Overlay */
+        .video-thumbnail {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+        }
+
+        .video-thumbnail:hover {
+            opacity: 0.9;
+        }
+
+        .video-thumbnail.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .video-thumbnail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease;
+        }
+
+        .video-thumbnail:hover::before {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .play-button {
+            position: relative;
+            z-index: 1;
+            width: var(--play-btn-size);
+            height: var(--play-btn-size);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .video-thumbnail:hover .play-button {
+            transform: scale(1.1);
+            background: #fff;
+        }
+
+        .play-button svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--bg-primary);
+            margin-left: 4px;
+        }
+
+        /* Custom Video Controls */
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg-controls);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 16px;
+            z-index: 3;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+            min-width: 40px;
+            height: 40px;
+        }
+
+        .control-btn:hover {
+            color: var(--accent);
+        }
+
+        .control-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+            transition: height 0.2s ease;
+        }
+
+        .progress-container:hover {
+            height: 6px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--text-primary);
+            border-radius: 2px;
+            width: 0%;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .progress-container:hover .progress-bar::after {
+            opacity: 1;
+        }
+
+        .time-display {
+            font-size: 13px;
+            color: var(--text-secondary);
+            min-width: 80px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .volume-slider {
+            width: 80px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-level {
+            height: 100%;
+            background: var(--text-primary);
+            border-radius: 2px;
+            width: 100%;
+        }
+
+        .action-area {
+            padding: 32px;
+        }
+
+        .project-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .project-desc {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 16px 24px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn-validate {
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+        }
+        .btn-validate:hover {
+            background-color: var(--accent);
+        }
+
+        .btn-modify {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-modify:hover {
+            border-color: var(--text-secondary);
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .comment-section {
+            display: none;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .comment-section label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .comment-section textarea {
+            width: 100%;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 16px;
+            border-radius: 6px;
+            font-size: 15px;
+            resize: vertical;
+            min-height: 100px;
+            outline: none;
+        }
+        .comment-section textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .comment-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            padding: 12px 20px;
+            flex: 0;
+            min-width: auto;
+        }
+        .btn-cancel:hover { color: var(--text-primary); }
+
+        .btn-submit {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            padding: 12px 24px;
+            flex: 0;
+            min-width: auto;
+        }
+
+        .success-state {
+            display: none;
+            text-align: center;
+            padding: 40px 32px;
+            animation: fadeIn 0.4s ease;
+        }
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --play-btn-size: 64px;
+            }
+            .header, .action-area { padding: 20px; }
+            .button-group { flex-direction: column; }
+            .action-btn { width: 100%; }
+            .volume-container { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="delivery-room">
+        <div class="header">
+            <div class="brand">WYRM.STUDIOS</div>
+            <div class="status-badge">Awaiting Validation</div>
+        </div>
+
+        <div class="video-container">
+            <div class="video-wrapper">
+                <div class="video-thumbnail" id="videoThumbnail" onclick="playVideo()">
+                    <div class="play-button">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div id="player"></div>
+            </div>
+
+            <!-- Custom Controls -->
+            <div class="custom-controls" id="customControls" style="display: none;">
+                <button class="control-btn" id="playPauseBtn" onclick="togglePlayPause()">
+                    <svg id="playIcon" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </button>
+
+                <div class="progress-container" id="progressContainer" onclick="seekVideo(event)">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+
+                <div class="volume-container">
+                    <button class="control-btn" id="muteBtn" onclick="toggleMute()">
+                        <svg id="volumeIcon" viewBox="0 0 24 24">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                        <svg id="muteIcon" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                        </svg>
+                    </button>
+                    <div class="volume-slider" id="volumeSlider" onclick="setVolume(event)">
+                        <div class="volume-level" id="volumeLevel"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-area" id="actionArea">
+            <h1 class="project-title">Social Media Reel - Draft 01</h1>
+            <p class="project-desc">Please review the video above. Once satisfied, click "Validate Work" to approve. If changes are needed, click "Request Modification" (1 revision round included).</p>
+            
+            <div class="button-group" id="buttonGroup">
+                <button class="action-btn btn-validate" onclick="validateWork()">✅ Validate Work</button>
+                <button class="action-btn btn-modify" onclick="showModification()">🔄 Request Modification</button>
+            </div>
+
+            <div class="comment-section" id="commentSection">
+                <label for="feedback">What needs to be changed? (Max 1 revision)</label>
+                <textarea id="feedback" placeholder="e.g., Please change the font color in the intro to white, and speed up the transition at 0:05..."></textarea>
+                <div class="comment-actions">
+                    <button class="action-btn btn-cancel" onclick="hideModification()">Cancel</button>
+                    <button class="action-btn btn-submit" onclick="submitModification()">Send Feedback</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="success-state" id="successState">
+            <div class="success-icon">✨</div>
+            <h2 class="project-title" id="successTitle">Work Validated!</h2>
+            <p class="project-desc" id="successDesc">Thank you. The WYRM team has been notified and will proceed with the next steps.</p>
+        </div>
+    </div>
+
+    <script>
+        const videoId = 'Zea40ycO_Jw';
+        let player;
+        let progressInterval;
+        let isPlaying = false;
+
+        // Load YouTube IFrame API
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // YouTube API ready callback
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'controls': 0,
+                    'showinfo': 0,
+                    'iv_load_policy': 3,
+                    'disablekb': 1,
+                    'fs': 0,
+                    'playsinline': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Set thumbnail
+            const thumbnail = document.getElementById('videoThumbnail');
+            thumbnail.style.backgroundImage = `url(https://img.youtube.com/vi/${videoId}/maxresdefault.jpg)`;
+
+            const img = new Image();
+            img.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            img.onerror = function() {
+                thumbnail.style.backgroundImage = `url(https://img.youtube.com/vi/${videoId}/hqdefault.jpg)`;
+            };
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                document.getElementById('playIcon').style.display = 'none';
+                document.getElementById('pauseIcon').style.display = 'block';
+                startProgressUpdate();
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                isPlaying = false;
+                document.getElementById('playIcon').style.display = 'block';
+                document.getElementById('pauseIcon').style.display = 'none';
+                stopProgressUpdate();
+            } else if (event.data === YT.PlayerState.ENDED) {
+                isPlaying = false;
+                document.getElementById('playIcon').style.display = 'block';
+                document.getElementById('pauseIcon').style.display = 'none';
+                stopProgressUpdate();
+            }
+        }
+
+        function playVideo() {
+            const thumbnail = document.getElementById('videoThumbnail');
+            const controls = document.getElementById('customControls');
+            
+            thumbnail.classList.add('hidden');
+            controls.style.display = 'flex';
+            
+            player.playVideo();
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+
+        function startProgressUpdate() {
+            progressInterval = setInterval(() => {
+                if (player && player.getCurrentTime && player.getDuration) {
+                    const currentTime = player.getCurrentTime();
+                    const duration = player.getDuration();
+                    const progress = (currentTime / duration) * 100;
+                    
+                    document.getElementById('progressBar').style.width = progress + '%';
+                    document.getElementById('timeDisplay').textContent = 
+                        formatTime(currentTime) + ' / ' + formatTime(duration);
+                }
+            }, 100);
+        }
+
+        function stopProgressUpdate() {
+            clearInterval(progressInterval);
+        }
+
+        function seekVideo(event) {
+            const container = document.getElementById('progressContainer');
+            const rect = container.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const width = rect.width;
+            const percentage = clickX / width;
+            
+            if (player && player.getDuration) {
+                const duration = player.getDuration();
+                const seekTime = duration * percentage;
+                player.seekTo(seekTime, true);
+            }
+        }
+
+        function toggleMute() {
+            if (player) {
+                if (player.isMuted()) {
+                    player.unMute();
+                    document.getElementById('volumeIcon').style.display = 'block';
+                    document.getElementById('muteIcon').style.display = 'none';
+                    document.getElementById('volumeLevel').style.width = '100%';
+                } else {
+                    player.mute();
+                    document.getElementById('volumeIcon').style.display = 'none';
+                    document.getElementById('muteIcon').style.display = 'block';
+                    document.getElementById('volumeLevel').style.width = '0%';
+                }
+            }
+        }
+
+        function setVolume(event) {
+            const slider = document.getElementById('volumeSlider');
+            const rect = slider.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const width = rect.width;
+            const percentage = Math.max(0, Math.min(1, clickX / width));
+            
+            if (player) {
+                player.setVolume(percentage * 100);
+                document.getElementById('volumeLevel').style.width = (percentage * 100) + '%';
+                
+                if (percentage === 0) {
+                    player.mute();
+                    document.getElementById('volumeIcon').style.display = 'none';
+                    document.getElementById('muteIcon').style.display = 'block';
+                } else {
+                    player.unMute();
+                    document.getElementById('volumeIcon').style.display = 'block';
+                    document.getElementById('muteIcon').style.display = 'none';
+                }
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return mins + ':' + (secs < 10 ? '0' : '') + secs;
+        }
+
+        function validateWork() {
+            document.getElementById('actionArea').style.display = 'none';
+            document.getElementById('successState').style.display = 'block';
+            document.getElementById('successTitle').innerText = 'Work Validated!';
+            document.getElementById('successDesc').innerText = 'Thank you. The WYRM team has been notified.';
+        }
+
+        function showModification() {
+            document.getElementById('commentSection').style.display = 'block';
+            document.getElementById('feedback').focus();
+        }
+
+        function hideModification() {
+            document.getElementById('commentSection').style.display = 'none';
+            document.getElementById('feedback').value = '';
+        }
+
+        function submitModification() {
+            const feedback = document.getElementById('feedback').value;
+            if (!feedback.trim()) {
+                alert('Please provide some feedback before submitting.');
+                return;
+            }
+
+            document.getElementById('actionArea').style.display = 'none';
+            document.getElementById('successState').style.display = 'block';
+            document.getElementById('successTitle').innerText = 'Modification Requested';
+            document.getElementById('successDesc').innerText = 'Your feedback has been sent to the team.';
+        }
+    </script>
+</body>
+</html>
